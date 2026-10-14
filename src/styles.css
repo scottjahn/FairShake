@@ -245,3 +245,18 @@ input.cell.num { text-align: right; max-width: 6rem; }
   .panel { padding: 0.9rem 1rem; }
 }
 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+
+/* ─── footer ────────────────────────────────────────────────────────────── */
+
+.sitefoot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.sitefoot a { color: var(--ink-soft); text-decoration: none; }
+.sitefoot a:hover { color: var(--violet); text-decoration: underline; }
+.head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }

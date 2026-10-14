@@ -1,6 +1,7 @@
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { stripBase, withBase } from "./basePath";
 import { fetchEvents } from "./dataSource";
+import Footer from "./Footer";
 import { byTickets, DrawResult, runDraw, splitTop } from "./draw";
 import { PublicEvent, Student } from "./types";
 
@@ -75,6 +76,7 @@ export default function App() {
       {events && eventId != null && (event
         ? <EventPage key={event.id} event={event} />
         : <section className="panel">That event doesn't exist. <Link to="/" go={go}>See all events</Link></section>)}
+      <Footer />
     </main>
   );
 }

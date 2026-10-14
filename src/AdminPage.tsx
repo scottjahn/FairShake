@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { withBase } from "./basePath";
+import Footer from "./Footer";
 import { byTickets, DrawResult, runDraw, splitTop } from "./draw";
 import { parseRoster } from "./parseRoster";
 import { AdminEvent, AdminEventSummary, AdminStudent, WinnerKind } from "./types";
@@ -128,6 +129,7 @@ export default function AdminPage() {
           ? <EventEditor key={selectedId} id={selectedId} onChanged={loadEvents} onDeleted={() => { select(null); loadEvents(); }} />
           : <section className="panel muted">Select or create an event.</section>}
       </div>
+      <Footer admin />
     </main>
   );
 }
@@ -171,6 +173,18 @@ function EventEditor({ id, onChanged, onDeleted }: { id: number; onChanged: () =
       event.locked ? "Unlocked — the event can be edited again." : "Locked. Run an export to publish the winners.");
   };
 
+  // Deleting cascades to every student in the event (ON DELETE CASCADE).
+  const remove = async () => {
+    const students = `${event.students.length} student${event.students.length === 1 ? "" : "s"}`;
+    if (!confirm(`Delete "${event.name}" and its ${students}? This can't be undone.`)) return;
+    try {
+      await send("DELETE", `/ops/events/${id}`);
+      onDeleted();
+    } catch (e) {
+      setBanner({ text: errText(e), isError: true });
+    }
+  };
+
   return (
     <div className="stack-lg">
       <section className="panel event-head">
@@ -181,9 +195,15 @@ function EventEditor({ id, onChanged, onDeleted }: { id: number; onChanged: () =
             <a href={`/event/${event.id}`} target="_blank" rel="noreferrer">public page ↗</a>
           </p>
         </div>
-        <button className={event.locked ? "secondary" : "lock-button"} onClick={toggleLock}>
-          {event.locked ? "Unlock" : "Lock event"}
-        </button>
+        <div className="head-actions">
+          <button className={event.locked ? "secondary" : "lock-button"} onClick={toggleLock}>
+            {event.locked ? "Unlock" : "Lock event"}
+          </button>
+          <button className="danger" onClick={remove} disabled={event.locked}
+            title={event.locked ? "Unlock the event to delete it" : "Delete this event and all its students"}>
+            Delete event
+          </button>
+        </div>
       </section>
 
       {banner && (
@@ -197,7 +217,7 @@ function EventEditor({ id, onChanged, onDeleted }: { id: number; onChanged: () =
       )}
 
       <WinnersPanel event={event} act={act} />
-      {!event.locked && <SettingsPanel event={event} act={act} onDeleted={onDeleted} />}
+      {!event.locked && <SettingsPanel event={event} act={act} />}
       {!event.locked && <UploadPanel event={event} act={act} />}
       <StudentsPanel event={event} act={act} />
     </div>
@@ -206,7 +226,7 @@ function EventEditor({ id, onChanged, onDeleted }: { id: number; onChanged: () =
 
 type Act = (fn: () => Promise<unknown>, ok?: string) => Promise<boolean>;
 
-function SettingsPanel({ event, act, onDeleted }: { event: AdminEvent; act: Act; onDeleted: () => void }) {
+function SettingsPanel({ event, act }: { event: AdminEvent; act: Act }) {
   const [name, setName] = useState(event.name);
   const [top, setTop] = useState(String(event.topCount));
   const [drawn, setDrawn] = useState(String(event.drawCount));
@@ -216,16 +236,6 @@ function SettingsPanel({ event, act, onDeleted }: { event: AdminEvent; act: Act;
     e.preventDefault();
     act(() => send("PUT", `/ops/events/${event.id}`, { name, topCount: Number(top), drawCount: Number(drawn) }), "Saved.");
   };
-  const remove = async () => {
-    if (!confirm(`Delete "${event.name}" and all ${event.students.length} students? This can't be undone.`)) return;
-    try {
-      await send("DELETE", `/ops/events/${event.id}`);
-      onDeleted();
-    } catch (e) {
-      alert(errText(e));
-    }
-  };
-
   return (
     <section className="panel">
       <h2>Event settings</h2>
@@ -238,7 +248,6 @@ function SettingsPanel({ event, act, onDeleted }: { event: AdminEvent; act: Act;
           <input type="number" min={0} value={drawn} onChange={(e) => setDrawn(e.target.value)} required />
         </label>
         <button type="submit" disabled={!dirty}>Save</button>
-        <button type="button" className="danger" onClick={remove}>Delete event</button>
       </form>
     </section>
   );
