@@ -1,0 +1,21 @@
+node_modules
+dist
+*.tsbuildinfo
+*.local
+.DS_Store
+.env
+.eslintcache
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Local SQLite database (canonical data lives on your machine, not in git).
+# The committed snapshot the static site builds from is public/data/ — note the
+# leading slash: /data/ anchors to repo root only, so public/data/ is NOT ignored.
+/data/
+*.db
+*.db-wal
+*.db-shm
+
+# Claude Code local helper config
+.claude/
