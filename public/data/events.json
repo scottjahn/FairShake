@@ -1,1 +1,270 @@
-[]
+[
+  {
+    "id": 2,
+    "name": "Math Facts Marathon",
+    "topCount": 2,
+    "drawCount": 2,
+    "locked": true,
+    "lockedAt": "2026-10-14 21:50:07",
+    "createdAt": "2026-10-14 21:49:37",
+    "students": [
+      {
+        "name": "Grace",
+        "tickets": 15,
+        "winner": "top",
+        "pickOrder": null
+      },
+      {
+        "name": "Jack",
+        "tickets": 15,
+        "winner": "top",
+        "pickOrder": null
+      },
+      {
+        "name": "Olive",
+        "tickets": 14,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Priya",
+        "tickets": 14,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Lena",
+        "tickets": 10,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Sam",
+        "tickets": 10,
+        "winner": "random",
+        "pickOrder": 2
+      },
+      {
+        "name": "Diego",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Finn",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ruby",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ben",
+        "tickets": 7,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Hiro",
+        "tickets": 7,
+        "winner": "random",
+        "pickOrder": 1
+      },
+      {
+        "name": "Chloe",
+        "tickets": 6,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Emma",
+        "tickets": 6,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Kai",
+        "tickets": 6,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ava",
+        "tickets": 5,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Maya",
+        "tickets": 4,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Noah",
+        "tickets": 2,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Quinn",
+        "tickets": 2,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Isla",
+        "tickets": 1,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Theo",
+        "tickets": 1,
+        "winner": null,
+        "pickOrder": null
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "name": "Fall Reading Challenge",
+    "topCount": 3,
+    "drawCount": 5,
+    "locked": false,
+    "lockedAt": null,
+    "createdAt": "2026-10-14 21:49:37",
+    "students": [
+      {
+        "name": "emma",
+        "tickets": 99,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Finn",
+        "tickets": 15,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Jack",
+        "tickets": 15,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Kai",
+        "tickets": 15,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Lena",
+        "tickets": 15,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Maya",
+        "tickets": 15,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ben",
+        "tickets": 14,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Grace",
+        "tickets": 14,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Isla",
+        "tickets": 11,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Noah",
+        "tickets": 10,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Olive",
+        "tickets": 10,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ruby",
+        "tickets": 10,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Ava",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Diego",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Hiro",
+        "tickets": 9,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Quinn",
+        "tickets": 6,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Sam",
+        "tickets": 6,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Priya",
+        "tickets": 5,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Chloe",
+        "tickets": 2,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Theo",
+        "tickets": 2,
+        "winner": null,
+        "pickOrder": null
+      },
+      {
+        "name": "Zed",
+        "tickets": 2,
+        "winner": null,
+        "pickOrder": null
+      }
+    ]
+  }
+]
