@@ -1,13 +1,13 @@
 import React, { lazy, Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { stripBase, withBase } from "./basePath";
+import { currentPath, pathHref } from "./route";
 import "./styles.css";
 
-const isAdminRoute = stripBase(window.location.pathname).toLowerCase().startsWith("/admin");
+const isAdminRoute = currentPath().toLowerCase().startsWith("/admin");
 
 // The admin panel only works against the local admin server (tools/admin-server.mjs).
-// In production the static site has no backend — Vite's dead-code elimination removes
+// The built offline file has no backend — Vite's dead-code elimination removes
 // AdminPage from the prod bundle entirely when import.meta.env.DEV is false.
 const AdminPage = import.meta.env.DEV ? lazy(() => import("./AdminPage")) : null;
 
@@ -20,7 +20,7 @@ const AdminNotice = () => (
         To edit events or record winners, run <code>npm run dev</code> on your machine
         and open <a href="http://localhost:5173/admin">http://localhost:5173/admin</a>.
       </p>
-      <p><a href={withBase("/")}>← Back to events</a></p>
+      <p><a href={pathHref("/")}>← Back to events</a></p>
     </section>
   </main>
 );

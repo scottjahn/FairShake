@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { withBase } from "./basePath";
+import { pathHref } from "./route";
 import Footer from "./Footer";
 import { byTickets, DrawResult, runDraw, splitTop } from "./draw";
 import { parseRoster } from "./parseRoster";
@@ -66,9 +66,10 @@ export default function AdminPage() {
 
   const exportSite = async () => {
     try {
+      setBanner({ text: "Building the offline file…", isError: false });
       const r = await send<{ path: string; events: number; locked: number }>("POST", "/ops/export");
       setBanner({
-        text: `Exported ${r.events} event(s) (${r.locked} locked) to ${r.path}. Commit and push it to publish.`,
+        text: `Built ${r.path} with ${r.events} event(s) (${r.locked} locked). Copy it to whoever runs the draw.`,
         isError: false,
       });
     } catch (err) {
@@ -80,11 +81,11 @@ export default function AdminPage() {
     <main className="app-shell admin">
       <header className="hero hero-admin">
         <div>
-          <a href={withBase("/")} className="brand"><span className="brand-mark" aria-hidden>🎟️</span> FairShake</a>
+          <a href={pathHref("/")} className="brand"><span className="brand-mark" aria-hidden>🎟️</span> FairShake</a>
           <p className="tagline">Admin · local only</p>
         </div>
-        <button className="secondary" onClick={exportSite} title="Same as npm run export">
-          Export for publishing
+        <button className="secondary" onClick={exportSite} title="Same as npm run build">
+          Build offline file
         </button>
       </header>
 
@@ -170,7 +171,7 @@ function EventEditor({ id, onChanged, onDeleted }: { id: number; onChanged: () =
   const toggleLock = () => {
     if (!event.locked && recorded.length === 0 && !confirm("No winners are recorded yet. Lock anyway?")) return;
     act(() => send("POST", `/ops/events/${id}/lock`, { locked: !event.locked }),
-      event.locked ? "Unlocked — the event can be edited again." : "Locked. Run an export to publish the winners.");
+      event.locked ? "Unlocked — the event can be edited again." : "Locked. Build the offline file to include the winners.");
   };
 
   // Deleting cascades to every student in the event (ON DELETE CASCADE).

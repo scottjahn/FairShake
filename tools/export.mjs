@@ -1,6 +1,5 @@
-// Build-time export: dump SQLite to the static JSON the deployed site fetches.
-// Run locally after recording an event, then commit public/data so the GitHub
-// Pages workflow can build without the database.
+// Dump SQLite to the JSON snapshot that tools/single-file.mjs bakes into the
+// offline page. `npm run build` runs this first.
 //
 //   npm run export
 
@@ -10,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { loadPublic } from './db.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const EXPORT_PATH = join(ROOT, 'public', 'data', 'events.json');
+export const EXPORT_PATH = join(ROOT, 'data', 'events.json');
 
 /** Write the snapshot; also called by the admin server's Export button. */
 export function writeExport() {

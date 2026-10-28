@@ -1,16 +1,15 @@
 import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
-import { stripBase, withBase } from "./basePath";
+import { currentPath, navigate, pathHref } from "./route";
 import { fetchEvents } from "./dataSource";
 import Footer from "./Footer";
 import { byTickets, pickWeighted, settleTop, splitTop } from "./draw";
 import { PublicEvent, Student } from "./types";
 
 // ─── routing ─────────────────────────────────────────────────────────────────
-// Two public routes: "/" (event list) and "/event/:id". GitHub Pages serves
-// 404.html (a copy of index.html) for deep links, so both boot the SPA.
+// Two public routes: "/" (event list) and "/event/:id" (see route.ts).
 
 const parseRoute = (): number | null => {
-  const m = stripBase(window.location.pathname).match(/^\/event\/(\d+)\/?$/i);
+  const m = currentPath().match(/^\/event\/(\d+)\/?$/i);
   return m ? Number(m[1]) : null;
 };
 
@@ -19,10 +18,14 @@ function useRoute(): [number | null, (path: string) => void] {
   useEffect(() => {
     const onPop = () => setEventId(parseRoute());
     window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
+    window.addEventListener("hashchange", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      window.removeEventListener("hashchange", onPop);
+    };
   }, []);
   const go = (path: string) => {
-    window.history.pushState(null, "", withBase(path));
+    navigate(path);
     setEventId(parseRoute());
     window.scrollTo(0, 0);
   };
@@ -37,7 +40,7 @@ function Link({ to, go, children, className }: {
     e.preventDefault();
     go(to);
   };
-  return <a href={withBase(to)} onClick={onClick} className={className}>{children}</a>;
+  return <a href={pathHref(to)} onClick={onClick} className={className}>{children}</a>;
 }
 
 const fmtDate = (sqlite: string) =>

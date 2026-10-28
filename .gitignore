@@ -9,9 +9,8 @@ dist
 !.vscode/settings.json
 !.vscode/tasks.json
 
-# Local SQLite database (canonical data lives on your machine, not in git).
-# The committed snapshot the static site builds from is public/data/ — note the
-# leading slash: /data/ anchors to repo root only, so public/data/ is NOT ignored.
+# Local SQLite database and its export (student data stays on your machine,
+# never in git).
 /data/
 *.db
 *.db-wal

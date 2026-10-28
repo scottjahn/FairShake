@@ -1,8 +1,9 @@
 # FairShake
 
 Prize drawings for students: a local admin tool for setting up events and recording winners,
-and a public site, published statically to GitHub Pages, where anyone can see the tickets and
-run the draw.
+and a single offline page, `FairShake.html`, that shows the tickets and runs the draw. The page
+is one self-contained file: copy it to any computer and open it in a browser, with no
+internet, no install and nothing published online.
 
 ## How winners are chosen
 
@@ -25,7 +26,7 @@ Edge cases:
 - **Not enough students** — the draw picks as many as are eligible.
 
 Randomness comes from the browser's `crypto.getRandomValues`. The rules live in
-[`src/draw.ts`](src/draw.ts), shared by the public page and the admin panel.
+[`src/draw.ts`](src/draw.ts), shared by the draw page and the admin panel.
 
 ## Architecture
 
@@ -33,8 +34,7 @@ Randomness comes from the browser's `crypto.getRandomValues`. The rules live in
 |---|---|
 | **Database** | SQLite file (`data/fairshake.db`) — lives on your machine, not in the repo |
 | **Admin tool** | Local Express server (`tools/admin-server.mjs`) on `127.0.0.1:8789` — never deployed |
-| **Public site** | Fully static — built from the snapshot in `public/data/events.json` |
-| **Hosting** | GitHub Pages at <https://scottjahn.github.io/FairShake/>, deployed by GitHub Actions |
+| **Draw page** | `dist/FairShake.html` — one offline file with the script, styles and a snapshot of the events (`data/events.json`) baked in |
 
 ## Quick start
 
@@ -50,24 +50,18 @@ npm run dev      # http://localhost:5173 (public) and http://localhost:5173/admi
    Paste `name, tickets` lines or two columns copied from a spreadsheet, or choose a CSV.
    *Merge* updates tickets for names already there and adds new ones; *Replace* swaps the
    whole roster.
-2. **Publish the roster** — export and push (below) so the public page shows the event.
-3. **Hold the draw** — open the event's public page and press **Draw a winner**, then **Draw next
+2. **Build the draw page** — press **Build offline file** in admin (or run `npm run build`), then
+   copy `dist/FairShake.html` to the computer that will run the draw.
+3. **Hold the draw** — open `FairShake.html`, pick the event and press **Draw a winner**, then **Draw next
    winner** as many times as you have prizes. The picks are kept in that browser if the page is
-   refreshed; **Start over** clears them. The page records nothing on the server.
+   refreshed; **Start over** clears them. Nothing is saved anywhere else.
 4. **Record the winners** — back in admin, set **Random draw** to the number drawn, mark each winner as *Top* or *Drawn* in the student
    list (or use **Run a draw here → Record these winners**), then **Lock event**. A locked event
-   can't be edited until unlocked, and its public page shows the recorded winners instead of the
-   draw button.
-5. **Publish** — export and push:
+   can't be edited until unlocked, and its page shows the recorded winners instead of the draw
+   button.
+5. **Share the results** (optional) — build the file again; it now shows the final winners.
 
-   ```bash
-   npm run export
-   git add public/data/
-   git commit -m "Winners for <event>"
-   git push
-   ```
-
-   The admin page's **Export for publishing** button does the same as `npm run export`.
+The event data never goes into git: `data/` (the database and its export) is ignored.
 
 ## Scripts
 
@@ -75,11 +69,5 @@ npm run dev      # http://localhost:5173 (public) and http://localhost:5173/admi
 |---|---|
 | `npm run dev` | Vite dev server (`:5173`) + local admin API (`:8789`) together |
 | `npm run seed` | Seed demo data (skips if any event already exists) |
-| `npm run export` | Dump SQLite → `public/data/events.json` for the static build |
-| `npm run build` | Type-check + production build (also copies `index.html` → `404.html` for deep links) |
-| `npm run preview` | Serve the production build locally |
-
-## GitHub Pages setup
-
-In the repo's **Settings → Pages**, set **Source** to **GitHub Actions**. Every push to `main`
-then builds and deploys via [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml).
+| `npm run export` | Dump SQLite → `data/events.json` |
+| `npm run build` | Export, type-check and build → `dist/FairShake.html` (the admin **Build offline file** button runs this) |

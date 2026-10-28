@@ -2,14 +2,20 @@
 //
 // Binds to 127.0.0.1 only — never reachable from the network. Vite proxies
 // /api/* here during `npm run dev` so the React admin panel works against the
-// live SQLite database. It is NOT deployed; the public site is fully static.
+// live SQLite database. It is NOT deployed; the public page is one offline file.
 //
 // Run:     npm run dev         (starts this alongside Vite)
 //          npm run dev:api     (this server alone, for debugging)
 
 import express from 'express';
 import { getDb, loadEvent, loadPublic, DB_PATH } from './db.mjs';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { writeExport } from './export.mjs';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const PORT = Number(process.env.FAIRSHAKE_ADMIN_PORT ?? 8789);
 const app = express();
@@ -63,11 +69,21 @@ const isUnique = (e) => String(e).includes('UNIQUE');
 
 app.get('/api/health', (_req, res) => send(res, { ok: true, service: 'fairshake-local-admin' }));
 
-// The same shape as public/data/events.json, so the public pages work live
+// The same shape as data/events.json, so the public pages work live
 // against the database during `npm run dev`.
 app.get('/api/public/events', guard((_req, res) => send(res, loadPublic())));
 
-app.post('/api/ops/export', guard((_req, res) => send(res, writeExport())));
+// Export the data and build dist/FairShake.html (the same as `npm run build`).
+app.post('/api/ops/export', async (_req, res) => {
+  try {
+    const r = writeExport();
+    await promisify(execFile)('npm', ['run', 'build'], { cwd: ROOT });
+    send(res, { ...r, path: 'dist/FairShake.html' });
+  } catch (e) {
+    console.error(e);
+    fail(res, `Build failed: ${e.stderr || e.message}`, 500);
+  }
+});
 
 // ─── events ──────────────────────────────────────────────────────────────────
 

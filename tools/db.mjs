@@ -2,7 +2,7 @@
 //
 // The single source of truth, edited locally through the admin server and read
 // by the export script. It never runs in production — the deployed site is
-// fully static (public/data/**).
+// a single offline file (see tools/single-file.mjs).
 
 import Database from 'better-sqlite3';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -73,7 +73,7 @@ export function loadEvent(id, opts, d = getDb()) {
 }
 
 /**
- * Every event with its students — the exact shape of public/data/events.json.
+ * Every event with its students — the exact shape of data/events.json.
  * Newest event first.
  */
 export function loadPublic(d = getDb()) {

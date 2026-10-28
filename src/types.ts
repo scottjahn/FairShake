@@ -10,7 +10,7 @@ export interface Student {
   pickOrder: number | null;
 }
 
-/** One event, as published in public/data/events.json. */
+/** One event, as exported to data/events.json. */
 export interface PublicEvent {
   id: number;
   name: string;
