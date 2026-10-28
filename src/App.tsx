@@ -2,7 +2,7 @@ import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { stripBase, withBase } from "./basePath";
 import { fetchEvents } from "./dataSource";
 import Footer from "./Footer";
-import { byTickets, DrawResult, runDraw, splitTop } from "./draw";
+import { byTickets, pickWeighted, settleTop, splitTop } from "./draw";
 import { PublicEvent, Student } from "./types";
 
 // ─── routing ─────────────────────────────────────────────────────────────────
@@ -94,7 +94,8 @@ function EventList({ events, go }: { events: PublicEvent[]; go: (p: string) => v
           </span>
           <h2>{e.name}</h2>
           <p className="muted">
-            {e.students.length} students · {totalTickets(e.students)} tickets · {e.topCount} top + {e.drawCount} drawn
+            {e.students.length} students · {totalTickets(e.students)} tickets · {e.topCount} top +{" "}
+            {e.locked ? `${e.drawCount} drawn` : "random draw"}
           </p>
         </Link>
       ))}
@@ -107,28 +108,75 @@ function EventList({ events, go }: { events: PublicEvent[]; go: (p: string) => v
 /** How long each random winner takes to be revealed after pressing Draw. */
 const REVEAL_MS = 900;
 
+/** The draw so far, by name. The first press settles any top tie. */
+interface DrawState {
+  tieWinners: string[];
+  picks: string[];
+}
+
+// Kept in the browser so a refresh mid-draw doesn't lose the winners.
+const drawKey = (id: number) => `fairshake.draw.${id}`;
+
+function loadDraw(id: number): DrawState | null {
+  try {
+    const raw = localStorage.getItem(drawKey(id));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraw(id: number, d: DrawState | null) {
+  try {
+    if (d) localStorage.setItem(drawKey(id), JSON.stringify(d));
+    else localStorage.removeItem(drawKey(id));
+  } catch { /* storage unavailable: the draw just won't survive a refresh */ }
+}
+
 function EventPage({ event }: { event: PublicEvent }) {
   const { topCount, drawCount } = event;
   const split = useMemo(() => splitTop(event.students, topCount), [event, topCount]);
-  const [draw, setDraw] = useState<DrawResult<Student> | null>(null);
-  const [revealed, setRevealed] = useState(0);
+  const [state, setState] = useState<DrawState | null>(() => (event.locked ? null : loadDraw(event.id)));
+  const [drawing, setDrawing] = useState(false);
   const timer = useRef<number>();
 
-  useEffect(() => () => window.clearInterval(timer.current), []);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(() => { if (!event.locked) saveDraw(event.id, state); }, [event, state]);
 
-  const startDraw = () => {
-    window.clearInterval(timer.current);
-    const result = runDraw(event.students, topCount, drawCount);
-    setDraw(result);
-    setRevealed(0);
-    if (result.random.length === 0) return;
-    timer.current = window.setInterval(() => {
-      setRevealed((r) => {
-        if (r + 1 >= result.random.length) window.clearInterval(timer.current);
-        return r + 1;
-      });
+  const byName = useMemo(() => new Map(event.students.map((s) => [s.name, s])), [event]);
+  const named = (names: string[]) => names.map((n) => byName.get(n)).filter((s): s is Student => !!s);
+  const draw = state && { tieWinners: named(state.tieWinners), random: named(state.picks) };
+
+  // Who can still be drawn: the pool left after the top spots, minus earlier picks.
+  const remaining = (d: DrawState | null) => {
+    const tieWinners = d ? named(d.tieWinners) : [];
+    const base = [...split.rest, ...split.tied.filter((s) => !tieWinners.includes(s))];
+    return base.filter((s) => s.tickets > 0 && !d?.picks.includes(s.name));
+  };
+
+  const drawNext = () => {
+    const settled = state ?? {
+      tieWinners: settleTop(event.students, topCount).tieWinners.map((s) => s.name),
+      picks: [],
+    };
+    setState(settled);
+    const [pick] = pickWeighted(remaining(settled), 1, (s) => s.tickets);
+    if (!pick) return;
+    setDrawing(true);
+    timer.current = window.setTimeout(() => {
+      setState({ ...settled, picks: [...settled.picks, pick.name] });
+      setDrawing(false);
     }, REVEAL_MS);
   };
+
+  const startOver = () => {
+    if (!window.confirm("Clear all the winners drawn so far and start over?")) return;
+    window.clearTimeout(timer.current);
+    setDrawing(false);
+    setState(null);
+  };
+
+  const poolLeft = remaining(state).length;
 
   // What to highlight: the recorded outcome once locked, otherwise this draw.
   const recordedTop = event.students.filter((s) => s.winner === "top").sort(byTickets);
@@ -144,14 +192,13 @@ function EventPage({ event }: { event: PublicEvent }) {
     split.tied.forEach((s) => badges.set(s, "Tied"));
     if (draw) {
       draw.tieWinners.forEach((s) => badges.set(s, "Top"));
-      draw.random.slice(0, revealed).forEach((s, i) => badges.set(s, `Drawn #${i + 1}`));
+      draw.random.forEach((s, i) => badges.set(s, `Drawn #${i + 1}`));
     }
   }
 
   // Everyone not guaranteed a top spot is in the pool (tied students may be).
   const poolTickets = totalTickets([...split.rest, ...split.tied]);
   const sorted = [...event.students].sort(byTickets);
-  const drawing = draw != null && revealed < draw.random.length;
 
   return (
     <>
@@ -160,7 +207,7 @@ function EventPage({ event }: { event: PublicEvent }) {
           <h1>{event.name}</h1>
           <p className="muted">
             {event.students.length} students · {totalTickets(event.students)} tickets ·
-            top {topCount} win, then {drawCount} more drawn at random (weighted by tickets)
+            top {topCount} win, then {event.locked ? drawCount : "more are"} drawn at random (weighted by tickets)
           </p>
         </div>
         {event.locked && (
@@ -196,23 +243,24 @@ function EventPage({ event }: { event: PublicEvent }) {
 
           <div className="panel winner-col draw-col">
             <h2>Random draw</h2>
-            <p className="muted small">{drawCount} more, weighted by tickets · top winners can't be picked again</p>
-            {draw ? (
+            <p className="muted small">One winner per press, weighted by tickets · nobody can be picked twice</p>
+            {draw && (draw.random.length > 0 || drawing) ? (
               <ol className="winner-list">
-                {draw.random.slice(0, revealed).map((s, i) => (
-                  <WinnerItem key={s.name} s={s} num={i + 1} fresh />
+                {draw.random.map((s, i) => (
+                  <WinnerItem key={s.name} s={s} num={i + 1} fresh={i === draw.random.length - 1} />
                 ))}
                 {drawing && <li className="winner-item pending"><span className="spinner" /> Drawing…</li>}
-                {!drawing && draw.random.length < drawCount && (
-                  <li className="muted small">Not enough eligible students for {drawCount} draws.</li>
-                )}
               </ol>
             ) : (
-              <p className="draw-empty">Press the button to draw {drawCount} winner{drawCount === 1 ? "" : "s"}.</p>
+              <p className="draw-empty">Press the button to draw the first winner.</p>
             )}
-            <button className="draw-button" onClick={startDraw} disabled={drawing || drawCount === 0}>
-              {draw ? "Draw again" : `Draw ${drawCount} winner${drawCount === 1 ? "" : "s"}`}
+            {!drawing && poolLeft === 0 && <p className="muted small">Everyone eligible has been drawn.</p>}
+            <button className="draw-button" onClick={drawNext} disabled={drawing || poolLeft === 0}>
+              {draw?.random.length ? "Draw next winner" : "Draw a winner"}
             </button>
+            {draw && !drawing && (
+              <button className="link small" onClick={startOver}>Start over</button>
+            )}
           </div>
         </section>
       )}

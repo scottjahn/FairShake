@@ -78,6 +78,22 @@ export interface DrawResult<T extends Entrant> {
   tieWinners: T[];
 }
 
+/**
+ * Settle the top spots (breaking any tie at the cutoff) and return the random
+ * pool left behind: everyone else, tie losers included. The public page draws
+ * from this pool one winner at a time, for as long as the button is pressed.
+ */
+export function settleTop<T extends Entrant>(
+  students: T[],
+  topCount: number,
+  rng: () => number = secureRandom,
+): { top: T[]; tieWinners: T[]; pool: T[] } {
+  const split = splitTop(students, topCount);
+  const tieWinners = pickWeighted(split.tied, split.tiedSlots, () => 1, rng);
+  const tieLosers = split.tied.filter((s) => !tieWinners.includes(s));
+  return { top: [...split.sure, ...tieWinners], tieWinners, pool: [...split.rest, ...tieLosers] };
+}
+
 export function runDraw<T extends Entrant>(
   students: T[],
   topCount: number,

@@ -7,11 +7,13 @@ run the draw.
 ## How winners are chosen
 
 Each event has a list of students, a ticket count for each, and two numbers: how many **top**
-winners and how many **random draw** winners (e.g. top 3, then 5 drawn).
+winners and how many **random draw** winners (e.g. top 3, then 5 drawn). On the public page the
+random draw is open-ended: each press of the button draws one more winner, for as long as you
+keep pressing. Enter the final random-draw count in admin afterwards, when you record the winners.
 
 1. **Top** — the students with the most tickets win outright.
-2. **Random draw** — more are drawn at random, weighted by tickets (10 tickets = 10× the
-   chance of 1 ticket). Each pick is removed from the pool before the next one.
+2. **Random draw** — more are drawn at random, one per press, weighted by tickets (10 tickets =
+   10× the chance of 1 ticket). Each pick is removed from the pool before the next one.
 3. **Once per event** — top winners are not in the random pool, and nobody can be drawn twice.
 
 Edge cases:
@@ -49,9 +51,10 @@ npm run dev      # http://localhost:5173 (public) and http://localhost:5173/admi
    *Merge* updates tickets for names already there and adds new ones; *Replace* swaps the
    whole roster.
 2. **Publish the roster** — export and push (below) so the public page shows the event.
-3. **Hold the draw** — open the event's public page and press **Draw**. Pressing again redraws;
-   the page itself records nothing.
-4. **Record the winners** — back in admin, mark each winner as *Top* or *Drawn* in the student
+3. **Hold the draw** — open the event's public page and press **Draw a winner**, then **Draw next
+   winner** as many times as you have prizes. The picks are kept in that browser if the page is
+   refreshed; **Start over** clears them. The page records nothing on the server.
+4. **Record the winners** — back in admin, set **Random draw** to the number drawn, mark each winner as *Top* or *Drawn* in the student
    list (or use **Run a draw here → Record these winners**), then **Lock event**. A locked event
    can't be edited until unlocked, and its public page shows the recorded winners instead of the
    draw button.
