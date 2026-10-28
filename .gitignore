@@ -16,5 +16,10 @@ dist
 *.db-wal
 *.db-shm
 
+# Order spreadsheets and roster exports hold student names.
+*.xlsx
+*.xls
+*.csv
+
 # Claude Code local helper config
 .claude/
